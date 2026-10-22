@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Arte JBR</title>
+<!--
+  Modelo de arte do Jornal Belford Roxo (post 1080x1350), preenchido pela URL:
+    arte.html?modelo=A|B|C&foto=<url>&titulo=<texto com *destaque*>&editoria=Polícia&foco=30
+  - titulo: o trecho entre *asteriscos* sai na cor de destaque
+  - foco: posição vertical da foto em % (0 = topo, 50 = meio); padrão 30, pra não cortar cabeça
+  - data: opcional (ex.: 22 OUT 2026); padrão = hoje
+  O GitHub Actions abre esta página no Chrome sem tela e salva o PNG.
+-->
+<style>
+  @font-face{font-family:'Anton';src:url('../fontes/Anton-Regular.ttf') format('truetype');font-display:block}
+  @font-face{font-family:'Montserrat';src:url('../fontes/Montserrat.ttf') format('truetype');font-weight:100 900;font-display:block}
+
+  :root{
+    --roxo:#7A2DB5; --roxo-claro:#B26BEB; --verm:#E3191F;
+    --tinta:#0D0B12; --tinta-2:#17121F; --papel:#F3EFE8; --papel-tinta:#1A1420;
+    --editoria:var(--roxo);
+  }
+  html,body{margin:0;padding:0;background:#222}
+  *{box-sizing:border-box}
+  .post{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased}
+  .foto{position:absolute;background-size:cover;background-repeat:no-repeat}
+  .tit{margin:0;text-wrap:balance}
+  .tit em{font-style:normal;color:var(--destaque)}
+
+  /* marca */
+  .marca{display:flex;align-items:center;gap:16px}
+  .marca .jb{font-family:'Anton';font-size:64px;line-height:.82;letter-spacing:1px;color:#fff}
+  .marca .jb b{font-weight:400;color:var(--roxo-claro)}
+  .marca .nome{font-weight:800;font-size:17px;letter-spacing:.24em;line-height:1.35;color:#fff}
+  .marca .nome b{font-weight:800;color:var(--roxo-claro)}
+
+  .tag{display:inline-block;background:var(--editoria);color:#fff;font-weight:800;font-size:26px;letter-spacing:.14em;text-transform:uppercase;padding:10px 20px 9px;line-height:1}
+
+  /* ---------- A: Manchete (evolução do modelo atual) ---------- */
+  #A{background:var(--tinta);--destaque:var(--roxo-claro)}
+  #A .foto{left:0;top:0;width:100%;height:860px}
+  #A .fade{position:absolute;left:0;top:430px;width:100%;height:440px;
+    background:linear-gradient(180deg,rgba(13,11,18,0) 0%,rgba(13,11,18,.55) 45%,rgba(13,11,18,.92) 80%,var(--tinta) 100%)}
+  #A .topo{position:absolute;left:0;top:0;width:100%;height:280px;background:linear-gradient(180deg,rgba(13,11,18,.82),rgba(13,11,18,.45) 50%,rgba(13,11,18,0))}
+  #A .marca{position:absolute;left:56px;top:48px;filter:drop-shadow(0 2px 10px rgba(0,0,0,.45))}
+  #A .bloco{position:absolute;left:64px;right:64px;top:770px;bottom:118px;display:flex;flex-direction:column}
+  #A .tag{align-self:flex-start;margin-bottom:28px}
+  #A .caixa{flex:1;display:flex;align-items:flex-start;overflow:hidden}
+  #A .tit{font-family:'Anton';text-transform:uppercase;color:#fff;line-height:1.02;letter-spacing:.005em}
+  #A .rod{position:absolute;left:64px;right:64px;bottom:52px;display:flex;justify-content:space-between;align-items:center;
+    color:#CFC6DA;font-weight:700;font-size:24px;letter-spacing:.06em}
+  #A .faixa{position:absolute;left:0;bottom:0;width:100%;height:14px;background:linear-gradient(90deg,var(--roxo) 0 72%,var(--verm) 72%)}
+
+  /* ---------- B: Jornal (versão clara, cara de capa de jornal) ---------- */
+  #B{background:var(--papel);--destaque:var(--roxo)}
+  #B .cab{position:absolute;left:56px;right:56px;top:40px;height:96px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--papel-tinta)}
+  #B .marca .jb,#B .marca .nome{color:var(--papel-tinta)}
+  #B .marca .jb b,#B .marca .nome b{color:var(--roxo)}
+  #B .marca .jb{font-size:58px}
+  #B .data{font-weight:700;font-size:22px;letter-spacing:.14em;color:#5A4E66;text-transform:uppercase}
+  #B .foto{left:56px;right:56px;top:164px;height:640px;width:auto}
+  #B .bloco{position:absolute;left:56px;right:56px;top:840px;bottom:110px;display:flex;flex-direction:column}
+  #B .ed{font-weight:800;font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--editoria-texto,var(--editoria));margin-bottom:18px;display:flex;align-items:center;gap:14px}
+  #B .ed::before{content:"";width:14px;height:14px;background:var(--editoria)}
+  #B .caixa{flex:1;display:flex;align-items:flex-start;overflow:hidden}
+  #B .tit{font-family:'Anton';text-transform:uppercase;color:var(--papel-tinta);line-height:1.03}
+  #B .rod{position:absolute;left:56px;right:56px;bottom:44px;display:flex;justify-content:space-between;align-items:center;
+    border-top:2px solid rgba(26,20,32,.18);padding-top:20px;color:var(--papel-tinta);font-weight:700;font-size:24px;letter-spacing:.06em}
+  #B .rod .selo{background:var(--verm);color:#fff;font-weight:800;font-size:18px;letter-spacing:.2em;padding:7px 12px 6px}
+
+  /* ---------- C: Foto inteira ---------- */
+  #C{background:var(--tinta);--destaque:#E2C2FF}
+  #C .foto{inset:0;width:100%;height:100%}
+  #C .fade{position:absolute;left:0;bottom:0;width:100%;height:780px;
+    background:linear-gradient(180deg,rgba(13,11,18,0) 0%,rgba(13,11,18,.78) 32%,rgba(13,11,18,.95) 58%,var(--tinta) 100%)}
+  #C .topo{position:absolute;left:0;top:0;width:100%;height:280px;background:linear-gradient(180deg,rgba(13,11,18,.82),rgba(13,11,18,.45) 50%,rgba(13,11,18,0))}
+  #C .marca{position:absolute;right:56px;top:48px;flex-direction:row-reverse;text-align:right;filter:drop-shadow(0 2px 10px rgba(0,0,0,.45))}
+  #C .marca .jb{font-size:56px}
+  #C .bloco{position:absolute;left:64px;right:64px;top:820px;bottom:120px;display:flex;flex-direction:column;justify-content:flex-end}
+  #C .tag{align-self:flex-start;margin-bottom:26px;border-radius:4px}
+  #C .caixa{display:flex;align-items:flex-end;overflow:hidden;max-height:100%}
+  #C .tit{font-weight:800;color:#fff;line-height:1.14;letter-spacing:-.01em}
+  #C .rod{position:absolute;left:64px;right:64px;bottom:52px;display:flex;justify-content:space-between;color:#CFC6DA;font-weight:700;font-size:23px;letter-spacing:.08em}
+</style>
+</head>
+<body>
+
+<div class="post" id="A" hidden>
+  <div class="foto"></div><div class="fade"></div><div class="topo"></div>
+  <div class="marca"><div class="jb">J<b>B</b></div><div class="nome">JORNAL<br>BELFORD <b>ROXO</b></div></div>
+  <div class="bloco"><span class="tag"></span><div class="caixa"><h1 class="tit"></h1></div></div>
+  <div class="rod"><span>jornalbelfordroxo.com.br</span><span class="data"></span></div>
+  <div class="faixa"></div>
+</div>
+
+<div class="post" id="B" hidden>
+  <div class="cab">
+    <div class="marca"><div class="jb">J<b>B</b></div><div class="nome">JORNAL<br>BELFORD <b>ROXO</b></div></div>
+    <div class="data"></div>
+  </div>
+  <div class="foto"></div>
+  <div class="bloco"><div class="ed"></div><div class="caixa"><h1 class="tit"></h1></div></div>
+  <div class="rod"><span>jornalbelfordroxo.com.br</span><span class="selo">NOTÍCIAS</span></div>
+</div>
+
+<div class="post" id="C" hidden>
+  <div class="foto"></div><div class="fade"></div><div class="topo"></div>
+  <div class="marca"><div class="jb">J<b>B</b></div><div class="nome">JORNAL<br>BELFORD <b>ROXO</b></div></div>
+  <div class="bloco"><span class="tag"></span><div class="caixa"><h1 class="tit"></h1></div></div>
+  <div class="rod"><span>jornalbelfordroxo.com.br</span><span class="data"></span></div>
+</div>
+
+<script>
+// Cor por editoria (as 11 categorias do robô). texto = versão escura pra usar sobre o papel do modelo B.
+const EDITORIAS = {
+  'Cidade':   {cor:'#7A2DB5'}, 'Política': {cor:'#5B2A9E'}, 'Polícia':  {cor:'#D7141A'},
+  'Saúde':    {cor:'#0E8A7E'}, 'Educação': {cor:'#1F5FD1'}, 'Esporte':  {cor:'#13843F'},
+  'Cultura':  {cor:'#C2410C'}, 'Economia': {cor:'#0F6E8C'}, 'Trânsito': {cor:'#B45309', texto:'#9A4506'},
+  'Serviço':  {cor:'#4B5563'}, 'Tempo':    {cor:'#2563EB'}
+};
+const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+const q = new URLSearchParams(location.search);
+const modelo = (q.get('modelo') || 'A').toUpperCase();
+const post = document.getElementById(modelo) || document.getElementById('A');
+post.hidden = false;
+
+const ed = q.get('editoria') || 'Cidade';
+const cfg = EDITORIAS[ed] || EDITORIAS['Cidade'];
+post.style.setProperty('--editoria', cfg.cor);
+if (cfg.texto) post.style.setProperty('--editoria-texto', cfg.texto);
+
+const hoje = new Date();
+const data = q.get('data') || `${hoje.getDate()} ${MESES[hoje.getMonth()]} ${hoje.getFullYear()}`;
+post.querySelectorAll('.data').forEach(el => el.textContent = data);
+post.querySelectorAll('.tag,.ed').forEach(el => el.textContent = ed);
+
+const foto = post.querySelector('.foto');
+foto.style.backgroundImage = `url("${q.get('foto') || ''}")`;
+foto.style.backgroundPosition = `center ${q.get('foco') || 30}%`;
+
+// título: *trecho* vira destaque; escapa o resto
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tit = post.querySelector('.tit');
+tit.innerHTML = esc(q.get('titulo') || 'Título da notícia').replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+// Ajusta o tamanho do título pra caber na caixa (maior possível, sem estourar)
+const LIMITES = {A:[124,58], B:[118,56], C:[78,44]};
+document.fonts.ready.then(() => {
+  const [max, min] = LIMITES[post.id];
+  const caixa = post.querySelector('.caixa');
+  const alturaMax = post.id === 'C' ? post.querySelector('.bloco').clientHeight - 90 : caixa.clientHeight;
+  let t = max;
+  tit.style.fontSize = t + 'px';
+  while (t > min && (tit.scrollHeight > alturaMax || tit.scrollWidth > caixa.clientWidth)) {
+    t -= 2; tit.style.fontSize = t + 'px';
+  }
+  document.body.dataset.pronto = '1';
+});
+</script>
+</body>
