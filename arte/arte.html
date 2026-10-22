@@ -25,6 +25,10 @@
   .post{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased}
   .foto{position:absolute;background-size:cover;background-repeat:no-repeat}
   .tit{margin:0;text-wrap:balance}
+  /* notícia sem foto: fundo da marca no lugar da foto */
+  .foto.vazia{background:radial-gradient(120% 90% at 50% 40%,#2A1740,var(--tinta));display:flex;align-items:center;justify-content:center}
+  .foto.vazia span{font-family:'Anton';font-size:300px;line-height:1;color:rgba(255,255,255,.08)}
+  .foto.vazia span b{font-weight:400;color:rgba(178,107,235,.22)}
   .tit em{font-style:normal;color:var(--destaque)}
 
   /* marca */
@@ -46,7 +50,7 @@
   #A .bloco{position:absolute;left:64px;right:64px;top:770px;bottom:118px;display:flex;flex-direction:column}
   #A .tag{align-self:flex-start;margin-bottom:28px}
   #A .caixa{flex:1;display:flex;align-items:flex-start;overflow:hidden}
-  #A .tit{font-family:'Anton';text-transform:uppercase;color:#fff;line-height:1.02;letter-spacing:.005em}
+  #A .tit{font-family:'Anton';text-transform:uppercase;color:#fff;line-height:1.1;letter-spacing:.005em;padding-top:.06em}
   #A .rod{position:absolute;left:64px;right:64px;bottom:52px;display:flex;justify-content:space-between;align-items:center;
     color:#CFC6DA;font-weight:700;font-size:24px;letter-spacing:.06em}
   #A .faixa{position:absolute;left:0;bottom:0;width:100%;height:14px;background:linear-gradient(90deg,var(--roxo) 0 72%,var(--verm) 72%)}
@@ -63,7 +67,7 @@
   #B .ed{font-weight:800;font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--editoria-texto,var(--editoria));margin-bottom:18px;display:flex;align-items:center;gap:14px}
   #B .ed::before{content:"";width:14px;height:14px;background:var(--editoria)}
   #B .caixa{flex:1;display:flex;align-items:flex-start;overflow:hidden}
-  #B .tit{font-family:'Anton';text-transform:uppercase;color:var(--papel-tinta);line-height:1.03}
+  #B .tit{font-family:'Anton';text-transform:uppercase;color:var(--papel-tinta);line-height:1.1;padding-top:.06em}
   #B .rod{position:absolute;left:56px;right:56px;bottom:44px;display:flex;justify-content:space-between;align-items:center;
     border-top:2px solid rgba(26,20,32,.18);padding-top:20px;color:var(--papel-tinta);font-weight:700;font-size:24px;letter-spacing:.06em}
   #B .rod .selo{background:var(--verm);color:#fff;font-weight:800;font-size:18px;letter-spacing:.2em;padding:7px 12px 6px}
@@ -136,7 +140,8 @@ post.querySelectorAll('.data').forEach(el => el.textContent = data);
 post.querySelectorAll('.tag,.ed').forEach(el => el.textContent = ed);
 
 const foto = post.querySelector('.foto');
-foto.style.backgroundImage = `url("${q.get('foto') || ''}")`;
+if (q.get('foto')) foto.style.backgroundImage = `url("${q.get('foto')}")`;
+else { foto.classList.add('vazia'); foto.innerHTML = '<span>J<b>B</b></span>'; }
 foto.style.backgroundPosition = `center ${q.get('foco') || 30}%`;
 
 // título: *trecho* vira destaque; escapa o resto
