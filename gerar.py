@@ -1,7 +1,7 @@
 """Gera o Reels da bomba do Jornal Belford Roxo (1080x1920, ~40 s).
 
 Entrada: JSON (arquivo ou variável PAYLOAD) com
-  n, titulo, destaque, categoria, roteiro, fotos (lista de URLs), arte (URL)
+  n, titulo, destaque, categoria, roteiro, fotos (lista de URLs), arte (URL), tarja e selo (opcionais)
 Saída: reels.mp4 na pasta de trabalho.
 
 Narração: edge-tts (voz pt-BR-FranciscaNeural, grátis, sem chave). Legenda sai das marcações de palavra da própria narração.
@@ -98,11 +98,13 @@ def moldura(d, pasta):
     for yy in range(0, 300):  # escurece o topo
         dr.line([(0, yy), (W, yy)], fill=(0, 0, 0, int(170 * (1 - yy / 300))))
     dr.rectangle([60, 120, 400, 216], fill=COR['verm'])
+    # bomba = PLANTÃO / AGORA; vídeo comum (resposta "N 4" no grupo) = NOTÍCIA / HOJE
+    tarja, selo = d.get('tarja') or 'PLANTÃO', d.get('selo') or 'AGORA'
     f = anton(66)
-    tw = dr.textlength('PLANTÃO', font=f)
-    dr.text((230 - tw / 2, 124), 'PLANTÃO', font=f, fill=COR['branco'])
+    tw = dr.textlength(tarja, font=f)
+    dr.text((230 - tw / 2, 124), tarja, font=f, fill=COR['branco'])
     dr.ellipse([425, 153, 455, 183], fill=COR['verm2'])
-    dr.text((472, 146), 'AGORA', font=mont(36), fill=COR['branco'])
+    dr.text((472, 146), selo, font=mont(36), fill=COR['branco'])
     fj = anton(76)
     dr.text((900, 118), 'J', font=fj, fill=COR['branco'])
     dr.text((900 + dr.textlength('J', font=fj), 118), 'B', font=fj, fill=COR['roxo2'])

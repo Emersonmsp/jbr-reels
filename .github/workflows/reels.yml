@@ -36,4 +36,4 @@ jobs:
           N: ${{ github.event.client_payload.n || fromJSON(inputs.payload).n }}
         run: |
           gh release delete "reels-$N" --yes --cleanup-tag 2>/dev/null || true
-          gh release create "reels-$N" trabalho/reels.mp4 --title "Reels Nº $N" --notes "Reels automático da bomba Nº $N"
+          gh release create "reels-$N" trabalho/reels.mp4 --title "Reels Nº $N" --notes "Reels automático Nº $N"
