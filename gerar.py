@@ -138,8 +138,8 @@ def moldura(d, pasta):
     # rodapé
     dr.rectangle([0, H - 150, W, H], fill=(0, 0, 0, 200))
     fr = mont(32, 700)
-    # Short só do YouTube: link não é clicável no celular, então o rodapé pede inscrição
-    txt = 'Inscreva-se  ·  @JornalBelfordRoxo' if d.get('yt') else 'Matéria completa no link da bio  ·  @jornalbelford.roxo'
+    # vídeo do YouTube + TikTok: link não é clicável, então o rodapé pede pra seguir (serve nas duas redes)
+    txt = 'Siga o Jornal Belford Roxo' if d.get('yt') else 'Matéria completa no link da bio  ·  @jornalbelford.roxo'
     dr.text(((W - dr.textlength(txt, font=fr)) / 2, H - 100), txt, font=fr, fill=COR['branco'])
     p = os.path.join(pasta, 'moldura.png')
     im.save(p)
