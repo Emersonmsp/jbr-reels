@@ -46,6 +46,8 @@ def chrome():
 
 def main():
     p = json.loads(os.environ['PAYLOAD'])
+    # O GitHub recusa client_payload com mais de 10 campos (422): o cartão do tempo manda os dados dentro de "t"
+    p.update(p.pop('t', None) or {})
     saida = os.path.abspath(os.environ.get('SAIDA', 'trabalho'))
     os.makedirs(saida, exist_ok=True)
     n, modelo = p['n'], str(p.get('modelo', 'B')).upper()
