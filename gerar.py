@@ -138,11 +138,67 @@ def moldura(d, pasta):
     # rodapé
     dr.rectangle([0, H - 150, W, H], fill=(0, 0, 0, 200))
     fr = mont(32, 700)
-    txt = 'Matéria completa no link da bio  ·  @jornalbelford.roxo'
+    # Short só do YouTube: link não é clicável no celular, então o rodapé pede inscrição
+    txt = 'Inscreva-se  ·  @JornalBelfordRoxo' if d.get('yt') else 'Matéria completa no link da bio  ·  @jornalbelford.roxo'
     dr.text(((W - dr.textlength(txt, font=fr)) / 2, H - 100), txt, font=fr, fill=COR['branco'])
     p = os.path.join(pasta, 'moldura.png')
     im.save(p)
     return p, y0 + alt
+
+
+def capa(d, foto, pasta):
+    """Capa do Short (thumbnail): lê bem em tamanho de miniatura. Foto em cima, 3-5 palavras gigantes, palavra-chave em tarja."""
+    im = Image.open(foto).convert('RGB')
+    esc = max(W / im.width, H / im.height)
+    fundo = im.resize((int(im.width * esc) + 1, int(im.height * esc) + 1))
+    fundo = fundo.crop(((fundo.width - W) // 2, (fundo.height - H) // 2, (fundo.width - W) // 2 + W, (fundo.height - H) // 2 + H))
+    fundo = Image.blend(fundo.filter(ImageFilter.GaussianBlur(36)), Image.new('RGB', (W, H), COR['preto']), 0.55)
+    # foto nítida ocupando a largura toda, do topo até ~metade
+    ah = 1040
+    esc = max(W / im.width, ah / im.height)
+    fg = im.resize((int(im.width * esc) + 1, int(im.height * esc) + 1), Image.LANCZOS)
+    fg = fg.crop(((fg.width - W) // 2, (fg.height - ah) // 2, (fg.width - W) // 2 + W, (fg.height - ah) // 2 + ah))
+    fundo.paste(fg, (0, 0))
+    dr = ImageDraw.Draw(fundo, 'RGBA')
+    for yy in range(760, 1040):  # a foto escurece onde entra o texto
+        dr.line([(0, yy), (W, yy)], fill=(11, 10, 14, int(255 * (yy - 760) / 280)))
+    dr.rectangle([0, 1040, W, H], fill=COR['preto'])
+    # local no topo
+    local = (d.get('local') or 'BELFORD ROXO').upper()
+    fl = anton(64)
+    lw = dr.textlength(local, font=fl)
+    dr.rectangle([60, 60, 60 + lw + 56, 160], fill=COR['verm'])
+    dr.text((88, 64), local, font=fl, fill=COR['branco'])
+    # manchete: até 5 palavras, a maior fonte que couber em 3 linhas
+    texto = (d.get('capa') or d.get('titulo') or '').upper().replace('*', '')
+    chave = (d.get('capa_destaque') or '').upper().split()
+    tam = 190
+    while tam > 100:
+        f = anton(tam)
+        linhas = quebrar(dr, texto, f, W - 120)
+        if len(linhas) <= 3:
+            break
+        tam -= 10
+    alt = int(tam * 1.2)
+    yy = 1700 - alt * len(linhas)
+    for ln in linhas:
+        x = 60
+        for w in ln.split(' '):
+            ww = dr.textlength(w, font=f)
+            if w.strip('.,:;!?') in chave:
+                b = dr.textbbox((x, yy), w, font=f)
+                dr.rectangle([b[0] - 16, b[1] - 14, b[2] + 16, b[3] + 14], fill=COR['verm'])
+            dr.text((x, yy), w, font=f, fill=COR['branco'])
+            x += ww + dr.textlength(' ', font=f)
+        yy += alt
+    # assinatura
+    fj = anton(64)
+    dr.text((60, 1770), 'J', font=fj, fill=COR['branco'])
+    dr.text((60 + dr.textlength('J', font=fj), 1770), 'B', font=fj, fill=COR['roxo2'])
+    dr.text((160, 1786), 'JORNAL BELFORD ROXO', font=mont(40, 800), fill=COR['branco'])
+    p = os.path.join(pasta, 'capa.jpg')
+    fundo.save(p, quality=88)
+    return p
 
 
 def cartao_final(pasta):
@@ -204,6 +260,8 @@ def legendas(palavras, pasta, y):
 def main():
     bruto = os.environ.get('PAYLOAD') or open(sys.argv[1], encoding='utf-8').read()
     d = json.loads(bruto)
+    # o robô agrupa tarja/selo/yt em "estilo" (o GitHub aceita no máximo 10 campos no client_payload)
+    d.update(d.pop('estilo', None) or {})
     pasta = os.path.abspath(os.environ.get('SAIDA', 'trabalho'))
     os.makedirs(pasta, exist_ok=True)
     fotos = baixar([u for u in (d.get('fotos') or []) if u][:5] + ([d['arte']] if d.get('arte') else []), pasta)
@@ -212,7 +270,8 @@ def main():
     mp3 = os.path.join(pasta, 'narracao.mp3')
     palavras = asyncio.run(narrar(d['roteiro'], mp3))
     dur = palavras[-1][1] + 0.6 if palavras else 40
-    final_dur = 2.5
+    # no YouTube o Short emenda no começo sozinho (repetição conta muito): sem cartão final
+    final_dur = 0 if d.get('yt') else 2.5
     total = dur + final_dur
     seg = dur / len(fotos)
     if seg < 3.5 and len(fotos) > 1:  # poucas palavras por foto deixa o vídeo nervoso: corta fotos
@@ -221,6 +280,11 @@ def main():
     mold, y_leg = moldura(d, pasta)
     legs = legendas(palavras, pasta, y_leg)
     fim = cartao_final(pasta)
+    if d.get('capa'):
+        try:
+            capa(d, fotos[0], pasta)
+        except Exception as e:
+            print('capa falhou', e)
 
     entradas, filtros, ultimo = [], [], None
     x, y, aw, ah = FOTO_AREA
@@ -243,9 +307,13 @@ def main():
         filtros.append(f"[{atual}][{k + 1 + j}:v]overlay=0:{y_leg + 40}:eof_action=pass:enable='between(t,{t0:.2f},{t1:.2f})'[v{j + 1}]")
         atual = f'v{j + 1}'
     idx_fim = k + 1 + len(legs)
-    entradas += ['-loop', '1', '-t', f'{final_dur}', '-i', fim]
-    filtros.append(f'[{idx_fim}:v]fps={FPS},format=yuv420p,setsar=1[fim]')
-    filtros.append(f'[{atual}]trim=0:{dur:.3f},setpts=PTS-STARTPTS,format=yuv420p[corpo];[corpo][fim]concat=n=2:v=1:a=0[vid]')
+    if final_dur:
+        entradas += ['-loop', '1', '-t', f'{final_dur}', '-i', fim]
+        filtros.append(f'[{idx_fim}:v]fps={FPS},format=yuv420p,setsar=1[fim]')
+        filtros.append(f'[{atual}]trim=0:{dur:.3f},setpts=PTS-STARTPTS,format=yuv420p[corpo];[corpo][fim]concat=n=2:v=1:a=0[vid]')
+    else:
+        idx_fim -= 1
+        filtros.append(f'[{atual}]trim=0:{dur:.3f},setpts=PTS-STARTPTS,format=yuv420p[vid]')
     entradas += ['-i', mp3]
     saida = os.path.join(pasta, 'reels.mp4')
     cmd = ['ffmpeg', '-y', '-loglevel', 'error'] + entradas + ['-filter_complex', ';'.join(filtros), '-map', '[vid]', '-map', f'{idx_fim + 1}:a',
