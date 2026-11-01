@@ -74,7 +74,7 @@ def baixar(urls, pasta):
     return caminhos
 
 
-def quadro_foto(src, dst):
+def quadro_foto(src, dst, zoom=1.12):
     """Fundo desfocado + foto na área central, um pouco maior que a área (pra dar movimento depois)."""
     im = Image.open(src).convert('RGB')
     fundo = im.copy()
@@ -85,7 +85,7 @@ def quadro_foto(src, dst):
     fundo = Image.blend(fundo, Image.new('RGB', (W, H), (0, 0, 0)), 0.45)
     fundo.save(dst + '_bg.jpg', quality=90)
     x, y, aw, ah = FOTO_AREA
-    esc = max(aw * 1.12 / im.width, ah * 1.12 / im.height)
+    esc = max(aw * zoom / im.width, ah * zoom / im.height)
     fg = im.resize((int(im.width * esc), int(im.height * esc)), Image.LANCZOS)
     fg.save(dst + '_fg.jpg', quality=92)
     return dst + '_bg.jpg', dst + '_fg.jpg', fg.width, fg.height
@@ -277,6 +277,12 @@ def main():
     if seg < 3.5 and len(fotos) > 1:  # poucas palavras por foto deixa o vídeo nervoso: corta fotos
         fotos = fotos[:max(1, int(dur // 3.5))]
         seg = dur / len(fotos)
+    longo = bool(d.get('longo'))
+    if longo:  # teste de 1 min: quase toda matéria tem 1 foto, então ela volta com outro enquadramento a cada ~7 s
+        base = fotos
+        qtd = max(len(base), int(dur // 7))
+        fotos = [base[i % len(base)] for i in range(qtd)]
+        seg = dur / qtd
     mold, y_leg = moldura(d, pasta)
     legs = legendas(palavras, pasta, y_leg)
     fim = cartao_final(pasta)
@@ -289,12 +295,17 @@ def main():
     entradas, filtros, ultimo = [], [], None
     x, y, aw, ah = FOTO_AREA
     for i, foto in enumerate(fotos):
-        bg, fg, fw, fh = quadro_foto(foto, os.path.join(pasta, f'q{i}'))
+        bg, fg, fw, fh = quadro_foto(foto, os.path.join(pasta, f'q{i}'), [1.12, 1.45, 1.3][i % 3] if longo else 1.12)
         entradas += ['-loop', '1', '-t', f'{seg:.3f}', '-i', bg, '-loop', '1', '-t', f'{seg:.3f}', '-i', fg]
         a, b = 2 * i, 2 * i + 1
         # movimento: foto anda devagar (alternando a direção) dentro da área
         dx = f"(iw-{aw})*{'t' if i % 2 == 0 else f'({seg:.3f}-t)'}/{seg:.3f}"
-        filtros.append(f"[{b}:v]crop={aw}:{ah}:{dx}:(ih-{ah})/2,setsar=1[fg{i}]")
+        dy = f'(ih-{ah})/2'
+        if longo:  # cada volta da foto mostra outro pedaço dela, andando só um trecho
+            ini = [0.0, 0.6, 0.3][i % 3]
+            dx = f"(iw-{aw})*({ini}+0.4*{'t' if i % 2 == 0 else f'({seg:.3f}-t)'}/{seg:.3f})"
+            dy = f'(ih-{ah})*{[0.5, 0.3, 0.7][i % 3]}'
+        filtros.append(f"[{b}:v]crop={aw}:{ah}:{dx}:{dy},setsar=1[fg{i}]")
         filtros.append(f"[{a}:v]setsar=1[bg{i}];[bg{i}][fg{i}]overlay={x}:{y},fps={FPS},format=yuv420p[s{i}]")
     n = len(fotos)
     filtros.append(''.join(f'[s{i}]' for i in range(n)) + f'concat=n={n}:v=1:a=0[base]')
